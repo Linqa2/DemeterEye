@@ -9,6 +9,46 @@ import Foundation
 import Observation
 import CoreGraphics
 
+// MARK: - Metrics
+
+enum HistoryMetric: String, CaseIterable, Hashable, Identifiable {
+    case ndvi
+    case cloudCover
+    case temperatureDegC
+    case humidityPct
+    
+    var id: Self { self }
+    
+    var displayName: String {
+        switch self {
+        case .ndvi: return "NDVI"
+        case .cloudCover: return "Cloud Cover"
+        case .temperatureDegC: return "Temperature"
+        case .humidityPct: return "Humidity"
+        }
+    }
+    
+    // A hint for default axis domain when shown alone
+    var defaultDomain: ClosedRange<Double>? {
+        switch self {
+        case .ndvi: return 0...1
+        case .cloudCover, .humidityPct: return 0...100
+        case .temperatureDegC: return nil // varies by field/season
+        }
+    }
+}
+
+// MARK: - Multi-metric point for charting
+
+struct MultiMetricPoint: Identifiable {
+    let id = UUID()
+    let date: Date
+    let metric: HistoryMetric
+    let value: Double
+    // Optional original record if needed for tooltips
+    let original: FieldHistory?
+}
+
 @Observable
 class HistoryChartViewModel {
     private let history: [FieldHistory]
@@ -20,6 +60,9 @@ class HistoryChartViewModel {
         }
     }
     
+    // Which metrics are currently selected to be shown on the chart
+    var selectedMetrics: Set<HistoryMetric> = [.ndvi]
+    
     // Available years from the data
     let availableYears: [Int]
     
@@ -29,14 +72,24 @@ class HistoryChartViewModel {
     init(history: [FieldHistory]) {
         self.history = history
         
-        // Parse all data points
+        // Parse all data points: include entries that have at least one metric
         self.allChartData = history.compactMap { item in
-            guard
-                let date = Self.parseDate(item.date),
-                let ndvi = item.ndvi
-            else { return nil }
-            return HistoryDataPoint(date: date, ndvi: ndvi, originalData: item)
-        }.sorted(by: { $0.date < $1.date })
+            guard let date = Self.parseDate(item.date) else { return nil }
+            let hasAnyMetric = item.ndvi != nil
+                || item.cloudCover != nil
+                || item.temperatureDegC != nil
+                || item.humidityPct != nil
+            guard hasAnyMetric else { return nil }
+            return HistoryDataPoint(
+                date: date,
+                ndvi: item.ndvi,
+                cloudCover: item.cloudCover.map { Double($0) },
+                temperatureDegC: item.temperatureDegC,
+                humidityPct: item.humidityPct,
+                originalData: item
+            )
+        }
+        .sorted(by: { $0.date < $1.date })
         
         // Extract available years
         let years = Set(allChartData.map { Calendar.current.component(.year, from: $0.date) })
@@ -48,6 +101,8 @@ class HistoryChartViewModel {
         // Initial filter
         updateFilteredData()
     }
+    
+    // MARK: - Chart sizing and density
     
     // Calculate appropriate chart width based on data points
     func calculateChartWidth(screenWidth: CGFloat) -> CGFloat {
@@ -77,11 +132,90 @@ class HistoryChartViewModel {
         return .month
     }
     
+    // MARK: - Filtering
+    
     // Filter data for selected year
     private func updateFilteredData() {
         chartData = allChartData.filter { dataPoint in
             Calendar.current.component(.year, from: dataPoint.date) == selectedYear
         }
+    }
+    
+    // Metrics available in the currently selected year (have at least one value)
+    var availableMetricsForSelectedYear: Set<HistoryMetric> {
+        var set = Set<HistoryMetric>()
+        for dp in chartData {
+            if dp.ndvi != nil { set.insert(.ndvi) }
+            if dp.cloudCover != nil { set.insert(.cloudCover) }
+            if dp.temperatureDegC != nil { set.insert(.temperatureDegC) }
+            if dp.humidityPct != nil { set.insert(.humidityPct) }
+        }
+        return set
+    }
+    
+    // Toggle selection, allow empty selection (chart will be empty)
+    func toggleMetric(_ metric: HistoryMetric) {
+        if selectedMetrics.contains(metric) {
+            selectedMetrics.remove(metric)
+        } else {
+            selectedMetrics.insert(metric)
+        }
+    }
+    
+    // Flattened points for all selected metrics in the selected year
+    var selectedMultiMetricPoints: [MultiMetricPoint] {
+        var points: [MultiMetricPoint] = []
+        guard !chartData.isEmpty else { return [] }
+        
+        for dp in chartData {
+            if selectedMetrics.contains(.ndvi), let val = dp.ndvi {
+                points.append(MultiMetricPoint(date: dp.date, metric: .ndvi, value: val, original: dp.originalData))
+            }
+            if selectedMetrics.contains(.cloudCover), let val = dp.cloudCover {
+                points.append(MultiMetricPoint(date: dp.date, metric: .cloudCover, value: val, original: dp.originalData))
+            }
+            if selectedMetrics.contains(.temperatureDegC), let val = dp.temperatureDegC {
+                points.append(MultiMetricPoint(date: dp.date, metric: .temperatureDegC, value: val, original: dp.originalData))
+            }
+            if selectedMetrics.contains(.humidityPct), let val = dp.humidityPct {
+                points.append(MultiMetricPoint(date: dp.date, metric: .humidityPct, value: val, original: dp.originalData))
+            }
+        }
+        return points.sorted { $0.date < $1.date }
+    }
+    
+    // Compute a reasonable Y-axis domain across selected metrics
+    // If only NDVI is selected, lock to 0...1 for better readability.
+    var yAxisDomain: ClosedRange<Double>? {
+        // Gather values per selected metric
+        var values: [Double] = []
+        
+        // If only NDVI selected, prefer fixed NDVI domain
+        if selectedMetrics == [.ndvi] {
+            return HistoryMetric.ndvi.defaultDomain
+        }
+        
+        for dp in chartData {
+            if selectedMetrics.contains(.ndvi), let v = dp.ndvi { values.append(v) }
+            if selectedMetrics.contains(.cloudCover), let v = dp.cloudCover { values.append(v) }
+            if selectedMetrics.contains(.temperatureDegC), let v = dp.temperatureDegC { values.append(v) }
+            if selectedMetrics.contains(.humidityPct), let v = dp.humidityPct { values.append(v) }
+        }
+        
+        guard let minV = values.min(), let maxV = values.max() else {
+            return nil
+        }
+        
+        // Add a small padding
+        let padding = (maxV - minV) * 0.05
+        let lower = minV - padding
+        let upper = maxV + padding
+        
+        // Avoid zero span
+        if lower == upper {
+            return (lower - 1)...(upper + 1)
+        }
+        return lower...upper
     }
     
     // Get data summary for selected year
@@ -110,8 +244,14 @@ class HistoryChartViewModel {
     }
 }
 
+// MARK: - Data container
+
 struct HistoryDataPoint {
     let date: Date
-    let ndvi: Double
+    let ndvi: Double?
+    let cloudCover: Double?
+    let temperatureDegC: Double?
+    let humidityPct: Double?
     let originalData: FieldHistory
 }
+
