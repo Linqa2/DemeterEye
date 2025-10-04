@@ -357,7 +357,6 @@ class FieldDetailViewModel {
         ])),
         createdAt: "2025-10-01T20:30:00Z",
         meta: FieldMeta(areaHa: 12.8, notes: "Sample field for testing", crop: "wheat"),
-        yields: [],
         history: [
             FieldHistory(date: "2025-03-15T00:00:00Z", ndvi: 0.25, cloudCover: 10, collection: "sentinel", temperatureDegC: 8.5, humidityPct: 65, cloudcoverPct: 10, windSpeedMps: 2.3, clarityPct: 90),
             FieldHistory(date: "2025-04-01T00:00:00Z", ndvi: 0.45, cloudCover: 15, collection: "sentinel", temperatureDegC: 12.8, humidityPct: 58, cloudcoverPct: 15, windSpeedMps: 3.1, clarityPct: 85),
@@ -365,10 +364,9 @@ class FieldDetailViewModel {
             FieldHistory(date: "2025-05-01T00:00:00Z", ndvi: 0.78, cloudCover: 20, collection: "sentinel", temperatureDegC: 22.1, humidityPct: 48, cloudcoverPct: 20, windSpeedMps: 2.7, clarityPct: 80),
             FieldHistory(date: "2025-05-18T00:00:00Z", ndvi: 0.82, cloudCover: 8, collection: "sentinel", temperatureDegC: 25.3, humidityPct: 45, cloudcoverPct: 8, windSpeedMps: 1.5, clarityPct: 92)
         ],
-        norm: FieldNorm(sosAvgDOY: 85, peakAvgDOY: 138, eosAvgDOY: 233, losAvgDays: 148, peakNdviAvg: 0.75),
-        current: CurrentData(sos: "2025-03-27T00:00:00Z", peakDate: "2025-05-18T00:00:00Z", eos: nil, los: nil, peakNdvi: 0.62, deviation: Deviation(daysSOS: 2, daysPeak: 0, daysEOS: nil, daysLOS: nil, peakNdvi: -0.05)),
         forecast: ForecastData(year: 2025, yieldTph: 4.5, ndviPeak: 0.73, ndviPeakAt: "2025-05-22T00:00:00Z", model: "xgb-v1", confidence: 0.72, updatedAt: "2025-10-01T20:31:00Z")
     )
     
     FieldDetailView(field: sampleField)
 }
+

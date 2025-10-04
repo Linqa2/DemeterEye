@@ -15,29 +15,32 @@ struct Field: Codable, Identifiable {
     let geometry: GeoJSONGeometry
     let createdAt: String
     let meta: FieldMeta
-    let yields: [YieldData]?
     let history: [FieldHistory]?
-    let norm: FieldNorm?
-    let current: CurrentData?
     let forecast: ForecastData?
     
     enum CodingKeys: String, CodingKey {
         case id = "_id"
-        case ownerId, name, geometry, createdAt, meta, yields, history, norm, current, forecast
+        case ownerId, name, geometry, createdAt, meta, history, forecast
     }
     
     // Parameter-based initializer
-    init(id: String, ownerId: String, name: String, geometry: GeoJSONGeometry, createdAt: String, meta: FieldMeta, yields: [YieldData]? = nil, history: [FieldHistory]? = nil, norm: FieldNorm? = nil, current: CurrentData? = nil, forecast: ForecastData? = nil) {
+    init(
+        id: String,
+        ownerId: String,
+        name: String,
+        geometry: GeoJSONGeometry,
+        createdAt: String,
+        meta: FieldMeta,
+        history: [FieldHistory]? = nil,
+        forecast: ForecastData? = nil
+    ) {
         self.id = id
         self.ownerId = ownerId
         self.name = name
         self.geometry = geometry
         self.createdAt = createdAt
         self.meta = meta
-        self.yields = yields
         self.history = history
-        self.norm = norm
-        self.current = current
         self.forecast = forecast
     }
     
@@ -65,30 +68,11 @@ struct Field: Codable, Identifiable {
         self.createdAt = createdAt
         self.meta = try FieldMeta(from: metaDict)
         
-        // Optional yields field
-        if let yieldsArray = dictionary["yields"] as? [[String: Any]] {
-            self.yields = try yieldsArray.map { try YieldData(from: $0) }
-        } else {
-            self.yields = nil
-        }
-        
         // Optional fields
         if let historyArray = dictionary["history"] as? [[String: Any]] {
             self.history = try historyArray.map { try FieldHistory(from: $0) }
         } else {
             self.history = nil
-        }
-        
-        if let normDict = dictionary["norm"] as? [String: Any] {
-            self.norm = try FieldNorm(from: normDict)
-        } else {
-            self.norm = nil
-        }
-        
-        if let currentDict = dictionary["current"] as? [String: Any] {
-            self.current = try CurrentData(from: currentDict)
-        } else {
-            self.current = nil
         }
         
         if let forecastDict = dictionary["forecast"] as? [String: Any] {
@@ -164,10 +148,7 @@ extension Field {
         coordinates: [(longitude: Double, latitude: Double)],
         createdAt: String,
         meta: FieldMeta,
-        yields: [YieldData] = [],
         history: [FieldHistory]? = nil,
-        norm: FieldNorm? = nil,
-        current: CurrentData? = nil,
         forecast: ForecastData? = nil
     ) -> Field {
         let positions = coordinates.map { Position(longitude: $0.longitude, latitude: $0.latitude) }
@@ -181,10 +162,7 @@ extension Field {
             geometry: geometry,
             createdAt: createdAt,
             meta: meta,
-            yields: yields,
             history: history,
-            norm: norm,
-            current: current,
             forecast: forecast
         )
     }
@@ -199,10 +177,7 @@ extension Field {
         heightMeters: Double,
         createdAt: String,
         meta: FieldMeta,
-        yields: [YieldData] = [],
         history: [FieldHistory]? = nil,
-        norm: FieldNorm? = nil,
-        current: CurrentData? = nil,
         forecast: ForecastData? = nil
     ) -> Field {
         // Approximate conversion from meters to degrees (this is simplified)
@@ -227,10 +202,7 @@ extension Field {
             geometry: geometry,
             createdAt: createdAt,
             meta: meta,
-            yields: yields,
             history: history,
-            norm: norm,
-            current: current,
             forecast: forecast
         )
     }
@@ -244,10 +216,7 @@ extension Field {
             geometry: newGeometry,
             createdAt: self.createdAt,
             meta: self.meta,
-            yields: self.yields,
             history: self.history,
-            norm: self.norm,
-            current: self.current,
             forecast: self.forecast
         )
     }
@@ -277,3 +246,4 @@ extension Field {
         return hectares
     }
 }
+
