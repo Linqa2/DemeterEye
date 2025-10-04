@@ -43,6 +43,11 @@ struct FieldDetailView: View {
                 VStack(spacing: 16) {
                     FieldMetadataCardView(field: field)
                     
+                    // Forecast Card (if forecast data exists)
+                    if let forecast = field.forecast {
+                        ForecastCardView(forecast: forecast)
+                    }
+                    
                     // History Button Card (if history data exists)
                     if let history = field.history, !history.isEmpty {
                         HistoryButtonCardView(history: history)
@@ -234,6 +239,101 @@ struct HistoryButtonCardView: View {
     }
 }
 
+struct ForecastCardView: View {
+    let forecast: ForecastData
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            // Header
+            HStack {
+                Circle()
+                    .fill(Color.orange.opacity(0.1))
+                    .frame(width: 50, height: 50)
+                    .overlay(
+                        Image(systemName: "chart.line.uptrend.xyaxis")
+                            .foregroundColor(.orange)
+                            .font(.title2)
+                    )
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Forecast")
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.primary)
+                    
+                    Text("Predicted season metrics")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                
+                Spacer()
+            }
+            
+            // Content
+            VStack(spacing: 12) {
+                MetadataRowView(label: "Year", value: "\(forecast.year)", icon: "calendar")
+                
+                if let yield = forecast.yieldTph {
+                    MetadataRowView(label: "Yield", value: String(format: "%.1f t/ha", yield), icon: "scalemass")
+                }
+                                
+                if let peakAt = forecast.ndviPeakAt {
+                    MetadataRowView(label: "Bloom peak date", value: formatDate(peakAt), icon: "calendar.badge.clock")
+                }
+                
+                if let peak = forecast.ndviPeak {
+                    MetadataRowView(label: "Peak NDVI", value: String(format: "%.2f", peak), icon: "leaf.circle.fill")
+                }
+                
+                if let confidence = forecast.confidence {
+                    VStack(alignment: .leading, spacing: 8) {
+                        MetadataRowView(label: "Confidence", value: String(format: "%.0f%%", confidence * 100), icon: "checkmark.seal.fill")
+                        ProgressView(value: min(max(confidence, 0), 1))
+                            .tint(.demeterGreen)
+                    }
+                }
+                
+                if let model = forecast.model, !model.isEmpty {
+                    MetadataRowView(label: "Model", value: model, icon: "cpu")
+                }
+                
+                if let updated = forecast.updatedAt {
+                    MetadataRowView(label: "Updated", value: formatDate(updated), icon: "clock.arrow.2.circlepath")
+                }
+            }
+        }
+        .padding(20)
+        .background(Color.white)
+        .cornerRadius(16)
+        .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+    }
+    
+    // MARK: - Date Helpers
+    
+    private func formatDate(_ dateString: String) -> String {
+        if let date = parseISO8601Flexible(dateString) {
+            let df = DateFormatter()
+            df.dateStyle = .medium
+            return df.string(from: date)
+        }
+        return dateString
+    }
+    
+    private func parseISO8601Flexible(_ dateString: String) -> Date? {
+        // Try with fractional seconds first
+        let f1 = ISO8601DateFormatter()
+        f1.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        if let d = f1.date(from: dateString) { return d }
+        
+        // Fallback without fractional seconds
+        let f2 = ISO8601DateFormatter()
+        f2.formatOptions = [.withInternetDateTime]
+        if let d = f2.date(from: dateString) { return d }
+        
+        return nil
+    }
+}
+
 @Observable
 class FieldDetailViewModel {
     // This view model can be simplified or removed entirely
@@ -272,4 +372,3 @@ class FieldDetailViewModel {
     
     FieldDetailView(field: sampleField)
 }
-
