@@ -47,8 +47,23 @@ struct HistoryChartView: View {
                     chartWidth: calculateChartWidth()
                 )
                 
-                // Data Summary
-                DataSummarySectionView(chartData: viewModel.chartData)
+                // Data Summary Navigation
+                NavigationLink {
+                    HistoryDataSummaryView(
+                        chartData: viewModel.chartData,
+                        title: "Data Summary - \(viewModel.selectedYear)"
+                    )
+                } label: {
+                    SummaryNavigationCardView(
+                        title: "Data Summary",
+                        subtitle: viewModel.yearSummary.dateRange,
+                        countText: "\(viewModel.yearSummary.dataPoints) entries",
+                        icon: "list.bullet.rectangle",
+                        iconColor: .demeterGreen
+                    )
+                }
+                .buttonStyle(PlainButtonStyle())
+                .padding(.horizontal)
                 
                 Spacer(minLength: 20)
             }
@@ -317,26 +332,6 @@ private struct ChartSectionView: View {
     }
 }
 
-private struct DataSummarySectionView: View {
-    let chartData: [HistoryDataPoint]
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Data Summary")
-                .font(.headline)
-                .fontWeight(.semibold)
-                .padding(.horizontal)
-            
-            LazyVStack(spacing: 8) {
-                ForEach(chartData.reversed(), id: \.date) { dataPoint in
-                    DataSummaryRowView(dataPoint: dataPoint)
-                }
-            }
-            .padding(.horizontal)
-        }
-    }
-}
-
 // Conditional Y-axis scale as a ViewModifier to avoid opaque return mismatches
 private struct OptionalYAxisScaleModifier: ViewModifier {
     let domain: ClosedRange<Double>?
@@ -481,28 +476,71 @@ struct MetricChip: View {
         Button(action: {
             if isEnabled { action() }
         }) {
-            HStack(spacing: 8) {
-                Circle()
-                    .fill(color)
-                    .frame(width: 10, height: 10)
-                Text(title)
-                    .font(.subheadline)
-                    .fontWeight(isSelected ? .semibold : .medium)
-            }
-            .foregroundColor(isSelected ? .white : color)
-            .padding(.horizontal, 14)
-            .padding(.vertical, 8)
-            .background(
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(isSelected ? color : color.opacity(0.1))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 20)
-                    .stroke(color, lineWidth: isSelected ? 0 : 1)
-            )
+            Text(title)
+                .font(.subheadline)
+                .fontWeight(isSelected ? .semibold : .medium)
+                .foregroundColor(isSelected ? .white : color)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
+                .background(
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(isSelected ? color : color.opacity(0.1))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20)
+                        .stroke(color, lineWidth: isSelected ? 0 : 1)
+                )
         }
         .buttonStyle(.plain)
         .disabled(!isEnabled)
+    }
+}
+
+// A small card-style navigation button consistent with the app's design
+struct SummaryNavigationCardView: View {
+    let title: String
+    let subtitle: String
+    let countText: String
+    let icon: String
+    let iconColor: Color
+    
+    var body: some View {
+        HStack(spacing: 16) {
+            Circle()
+                .fill(iconColor.opacity(0.1))
+                .frame(width: 50, height: 50)
+                .overlay(
+                    Image(systemName: icon)
+                        .foregroundColor(iconColor)
+                        .font(.title2)
+                )
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.primary)
+                
+                Text(countText)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                
+                Text(subtitle)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .lineLimit(2)
+            }
+            
+            Spacer()
+            
+            Image(systemName: "chevron.right")
+                .foregroundColor(.secondary)
+                .font(.subheadline)
+        }
+        .padding(20)
+        .background(Color.white)
+        .cornerRadius(16)
+        .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
     }
 }
 
