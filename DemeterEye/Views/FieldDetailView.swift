@@ -37,6 +37,7 @@ struct FieldDetailView: View {
                         }
                         .frame(height: 300)
                         .cornerRadius(16)
+                        .allowsHitTesting(false)
                     }
                     .padding(.horizontal, 16)
                     

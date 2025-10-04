@@ -30,7 +30,7 @@ class DemeterService: ObservableObject {
     
     private init() {
         // Check if user is already authenticated
-        if let token = authToken {
+        if authToken != nil {
             isAuthenticated = true
         }
     }

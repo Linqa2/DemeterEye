@@ -30,17 +30,37 @@ extension Field {
             ],
             history: [
                 FieldHistory(
-                    year: 2024,
-                    phenology: Phenology(
-                        sos: "2024-03-25T00:00:00Z",
-                        peakDate: "2024-05-18T00:00:00Z",
-                        eos: "2024-08-20T00:00:00Z",
-                        los: 148,
-                        peakNdvi: 0.78,
-                        deviation: Deviation(daysSOS: -3, daysPeak: 0, daysEOS: 1, daysLOS: 2, peakNdvi: 0.03)
-                    ),
-                    ndviStats: NDVIStats(mean: 0.56, max: 0.78, auc: 52.3, samples: 24, source: "HLS/Sentinel-2"),
-                    weather: Weather(tminAvgC: 6.1, tmaxAvgC: 18.9, windAvgMs: 3.2, sunHours: 820, precipMm: 210, gdd: 1350)
+                    date: "2024-03-25T00:00:00Z",
+                    ndvi: 0.28,
+                    cloudCover: 6,
+                    collection: "HLSS30_2.0",
+                    temperatureDegC: 9.1,
+                    humidityPct: 68.0,
+                    cloudcoverPct: 34.0,
+                    windSpeedMps: 3.4,
+                    clarityPct: 66.0
+                ),
+                FieldHistory(
+                    date: "2024-05-18T00:00:00Z",
+                    ndvi: 0.78,
+                    cloudCover: 2,
+                    collection: "HLSS30_2.0",
+                    temperatureDegC: 18.9,
+                    humidityPct: 55.0,
+                    cloudcoverPct: 8.0,
+                    windSpeedMps: 2.1,
+                    clarityPct: 92.0
+                ),
+                FieldHistory(
+                    date: "2024-08-20T00:00:00Z",
+                    ndvi: 0.45,
+                    cloudCover: 5,
+                    collection: "HLSS30_2.0",
+                    temperatureDegC: 22.5,
+                    humidityPct: 62.0,
+                    cloudcoverPct: 18.0,
+                    windSpeedMps: 2.8,
+                    clarityPct: 82.0
                 )
             ],
             norm: FieldNorm(sosAvgDOY: 85, peakAvgDOY: 138, eosAvgDOY: 233, losAvgDays: 148, peakNdviAvg: 0.75),
@@ -83,17 +103,37 @@ extension Field {
             ],
             history: [
                 FieldHistory(
-                    year: 2024,
-                    phenology: Phenology(
-                        sos: "2024-04-10T00:00:00Z",
-                        peakDate: "2024-06-25T00:00:00Z",
-                        eos: "2024-09-15T00:00:00Z",
-                        los: 158,
-                        peakNdvi: 0.82,
-                        deviation: Deviation(daysSOS: 1, daysPeak: -2, daysEOS: 3, daysLOS: 2, peakNdvi: 0.07)
-                    ),
-                    ndviStats: NDVIStats(mean: 0.61, max: 0.82, auc: 58.7, samples: 28, source: "HLS/Sentinel-2"),
-                    weather: Weather(tminAvgC: 8.3, tmaxAvgC: 22.1, windAvgMs: 2.8, sunHours: 950, precipMm: 385, gdd: 1680)
+                    date: "2024-04-10T00:00:00Z",
+                    ndvi: 0.35,
+                    cloudCover: 4,
+                    collection: "HLSS30_2.0",
+                    temperatureDegC: 11.2,
+                    humidityPct: 63.4,
+                    cloudcoverPct: 18.5,
+                    windSpeedMps: 2.8,
+                    clarityPct: 81.5
+                ),
+                FieldHistory(
+                    date: "2024-06-25T00:00:00Z",
+                    ndvi: 0.82,
+                    cloudCover: 1,
+                    collection: "HLSS30_2.0",
+                    temperatureDegC: 25.1,
+                    humidityPct: 50.8,
+                    cloudcoverPct: 6.0,
+                    windSpeedMps: 2.3,
+                    clarityPct: 94.0
+                ),
+                FieldHistory(
+                    date: "2024-09-15T00:00:00Z",
+                    ndvi: 0.58,
+                    cloudCover: 7,
+                    collection: "HLSS30_2.0",
+                    temperatureDegC: 18.7,
+                    humidityPct: 65.2,
+                    cloudcoverPct: 25.1,
+                    windSpeedMps: 3.6,
+                    clarityPct: 74.9
                 )
             ],
             norm: FieldNorm(sosAvgDOY: 100, peakAvgDOY: 178, eosAvgDOY: 255, losAvgDays: 155, peakNdviAvg: 0.75),
@@ -136,17 +176,37 @@ extension Field {
             ],
             history: [
                 FieldHistory(
-                    year: 2024,
-                    phenology: Phenology(
-                        sos: "2024-05-05T00:00:00Z",
-                        peakDate: "2024-07-12T00:00:00Z",
-                        eos: "2024-09-28T00:00:00Z",
-                        los: 146,
-                        peakNdvi: 0.74,
-                        deviation: Deviation(daysSOS: 0, daysPeak: 3, daysEOS: -2, daysLOS: 1, peakNdvi: -0.01)
-                    ),
-                    ndviStats: NDVIStats(mean: 0.52, max: 0.74, auc: 47.9, samples: 22, source: "HLS/Sentinel-2"),
-                    weather: Weather(tminAvgC: 12.1, tmaxAvgC: 26.4, windAvgMs: 3.5, sunHours: 1120, precipMm: 290, gdd: 1580)
+                    date: "2024-05-05T00:00:00Z",
+                    ndvi: 0.42,
+                    cloudCover: 8,
+                    collection: "HLSS30_2.0",
+                    temperatureDegC: 15.3,
+                    humidityPct: 60.6,
+                    cloudcoverPct: 24.3,
+                    windSpeedMps: 3.5,
+                    clarityPct: 75.7
+                ),
+                FieldHistory(
+                    date: "2024-07-12T00:00:00Z",
+                    ndvi: 0.74,
+                    cloudCover: 3,
+                    collection: "HLSS30_2.0",
+                    temperatureDegC: 26.4,
+                    humidityPct: 48.1,
+                    cloudcoverPct: 12.0,
+                    windSpeedMps: 2.9,
+                    clarityPct: 88.0
+                ),
+                FieldHistory(
+                    date: "2024-09-28T00:00:00Z",
+                    ndvi: 0.51,
+                    cloudCover: 9,
+                    collection: "HLSS30_2.0",
+                    temperatureDegC: 19.8,
+                    humidityPct: 58.7,
+                    cloudcoverPct: 31.2,
+                    windSpeedMps: 4.1,
+                    clarityPct: 68.8
                 )
             ],
             norm: FieldNorm(sosAvgDOY: 125, peakAvgDOY: 190, eosAvgDOY: 273, losAvgDays: 148, peakNdviAvg: 0.75),
