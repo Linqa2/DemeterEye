@@ -12,66 +12,51 @@ import Observation
 struct FieldDetailView: View {
     let field: Field
     @State private var viewModel = FieldDetailViewModel()
-    @Environment(\.dismiss) private var dismiss
     
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: 20) {
-                    // Map Section
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Field Location")
-                            .font(.headline)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.primary)
-                        
-                        Map(initialPosition: .region(
-                            MKCoordinateRegion(
-                                center: field.centerCoordinate,
-                                span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)
-                            )
-                        )) {
-                            MapPolygon(coordinates: field.coordinates)
-                                .foregroundStyle(Color.demeterGreen.opacity(0.3))
-                                .stroke(Color.demeterGreen, lineWidth: 3)
-                        }
-                        .frame(height: 300)
-                        .cornerRadius(16)
-                        .allowsHitTesting(false)
-                    }
-                    .padding(.horizontal, 16)
+        ScrollView {
+            VStack(spacing: 20) {
+                // Map Section
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Field Location")
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.primary)
                     
-                    // Field Metadata Card
-                    VStack(spacing: 16) {
-                        FieldMetadataCardView(field: field)
-                        
-                        // History Button Card (if history data exists)
-                        if let history = field.history, !history.isEmpty {
-                            HistoryButtonCardView(history: history)
-                        }
+                    Map(initialPosition: .region(
+                        MKCoordinateRegion(
+                            center: field.centerCoordinate,
+                            span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)
+                        )
+                    )) {
+                        MapPolygon(coordinates: field.coordinates)
+                            .foregroundStyle(Color.demeterGreen.opacity(0.3))
+                            .stroke(Color.demeterGreen, lineWidth: 3)
                     }
-                    .padding(.horizontal, 16)
-                    
-                    Spacer(minLength: 20)
+                    .frame(height: 300)
+                    .cornerRadius(16)
+                    .allowsHitTesting(false)
                 }
-                .padding(.vertical, 16)
-            }
-            .background(Color.demeterBackground)
-            .navigationTitle(field.name)
-            .navigationBarTitleDisplayMode(.large)
-            .navigationBarBackButtonHidden(true)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: { dismiss() }) {
-                        HStack(spacing: 4) {
-                            Image(systemName: "chevron.left")
-                            Text("Fields")
-                        }
-                        .foregroundColor(.demeterGreen)
+                .padding(.horizontal, 16)
+                
+                // Field Metadata Card
+                VStack(spacing: 16) {
+                    FieldMetadataCardView(field: field)
+                    
+                    // History Button Card (if history data exists)
+                    if let history = field.history, !history.isEmpty {
+                        HistoryButtonCardView(history: history)
                     }
                 }
+                .padding(.horizontal, 16)
+                
+                Spacer(minLength: 20)
             }
+            .padding(.vertical, 16)
         }
+        .background(Color.demeterBackground)
+        .navigationTitle(field.name)
+        .navigationBarTitleDisplayMode(.large)
     }
 }
 
@@ -204,12 +189,11 @@ struct MetadataRowView: View {
 
 struct HistoryButtonCardView: View {
     let history: [FieldHistory]
-    @State private var showingHistoryChart = false
     
     var body: some View {
-        Button(action: {
-            showingHistoryChart = true
-        }) {
+        NavigationLink {
+            HistoryChartView(history: history)
+        } label: {
             HStack(spacing: 16) {
                 Circle()
                     .fill(Color.blue.opacity(0.1))
@@ -247,13 +231,8 @@ struct HistoryButtonCardView: View {
             .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
         }
         .buttonStyle(PlainButtonStyle())
-        .sheet(isPresented: $showingHistoryChart) {
-            HistoryChartView(history: history)
-        }
     }
 }
-
-
 
 @Observable
 class FieldDetailViewModel {
@@ -293,3 +272,4 @@ class FieldDetailViewModel {
     
     FieldDetailView(field: sampleField)
 }
+

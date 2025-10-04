@@ -7,6 +7,7 @@
 
 import Foundation
 import Observation
+import CoreGraphics
 
 @Observable
 class HistoryChartViewModel {
@@ -30,8 +31,11 @@ class HistoryChartViewModel {
         
         // Parse all data points
         self.allChartData = history.compactMap { item in
-            guard let date = Self.parseDate(item.date) else { return nil }
-            return HistoryDataPoint(date: date, ndvi: item.ndvi, originalData: item)
+            guard
+                let date = Self.parseDate(item.date),
+                let ndvi = item.ndvi
+            else { return nil }
+            return HistoryDataPoint(date: date, ndvi: ndvi, originalData: item)
         }.sorted(by: { $0.date < $1.date })
         
         // Extract available years

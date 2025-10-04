@@ -9,14 +9,14 @@ import Foundation
 
 struct FieldHistory: Codable {
     let date: String
-    let ndvi: Double
-    let cloudCover: Int
-    let collection: String
-    let temperatureDegC: Double
-    let humidityPct: Double
-    let cloudcoverPct: Double
-    let windSpeedMps: Double
-    let clarityPct: Double
+    let ndvi: Double?
+    let cloudCover: Int?
+    let collection: String?
+    let temperatureDegC: Double?
+    let humidityPct: Double?
+    let cloudcoverPct: Double?
+    let windSpeedMps: Double?
+    let clarityPct: Double?
     
     enum CodingKeys: String, CodingKey {
         case date, ndvi, collection
@@ -29,7 +29,17 @@ struct FieldHistory: Codable {
     }
     
     // Parameter-based initializer
-    init(date: String, ndvi: Double, cloudCover: Int, collection: String, temperatureDegC: Double, humidityPct: Double, cloudcoverPct: Double, windSpeedMps: Double, clarityPct: Double) {
+    init(
+        date: String,
+        ndvi: Double? = nil,
+        cloudCover: Int? = nil,
+        collection: String? = nil,
+        temperatureDegC: Double? = nil,
+        humidityPct: Double? = nil,
+        cloudcoverPct: Double? = nil,
+        windSpeedMps: Double? = nil,
+        clarityPct: Double? = nil
+    ) {
         self.date = date
         self.ndvi = ndvi
         self.cloudCover = cloudCover
@@ -43,28 +53,20 @@ struct FieldHistory: Codable {
     
     // Dictionary-based initializer
     init(from dictionary: [String: Any]) throws {
-        guard let date = dictionary["date"] as? String,
-              let ndvi = dictionary["ndvi"] as? Double,
-              let cloudCover = dictionary["cloud_cover"] as? Int,
-              let collection = dictionary["collection"] as? String,
-              let temperatureDegC = dictionary["temperature_deg_c"] as? Double,
-              let humidityPct = dictionary["humidity_pct"] as? Double,
-              let cloudcoverPct = dictionary["cloudcover_pct"] as? Double,
-              let windSpeedMps = dictionary["wind_speed_mps"] as? Double,
-              let clarityPct = dictionary["clarity_pct"] as? Double else {
+        guard let date = dictionary["date"] as? String else {
             throw DecodingError.dataCorrupted(
-                DecodingError.Context(codingPath: [], debugDescription: "Missing required fields in FieldHistory dictionary")
+                DecodingError.Context(codingPath: [], debugDescription: "Missing required field 'date' in FieldHistory dictionary")
             )
         }
         
         self.date = date
-        self.ndvi = ndvi
-        self.cloudCover = cloudCover
-        self.collection = collection
-        self.temperatureDegC = temperatureDegC
-        self.humidityPct = humidityPct
-        self.cloudcoverPct = cloudcoverPct
-        self.windSpeedMps = windSpeedMps
-        self.clarityPct = clarityPct
+        self.ndvi = dictionary["ndvi"] as? Double
+        self.cloudCover = dictionary["cloud_cover"] as? Int
+        self.collection = dictionary["collection"] as? String
+        self.temperatureDegC = dictionary["temperature_deg_c"] as? Double
+        self.humidityPct = dictionary["humidity_pct"] as? Double
+        self.cloudcoverPct = dictionary["cloudcover_pct"] as? Double
+        self.windSpeedMps = dictionary["wind_speed_mps"] as? Double
+        self.clarityPct = dictionary["clarity_pct"] as? Double
     }
 }

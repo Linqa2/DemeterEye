@@ -12,7 +12,6 @@ import Observation
 struct FieldsListView: View {
     @State private var viewModel = FieldsListViewModel()
     @EnvironmentObject private var demeterService: DemeterService
-    @State private var selectedField: Field?
     
     var body: some View {
         NavigationStack {
@@ -44,10 +43,12 @@ struct FieldsListView: View {
                     ScrollView {
                         LazyVStack(spacing: 16) {
                             ForEach(viewModel.fields) { field in
-                                FieldRowView(field: field)
-                                    .onTapGesture {
-                                        selectedField = field
-                                    }
+                                NavigationLink {
+                                    FieldDetailView(field: field)
+                                } label: {
+                                    FieldRowView(field: field)
+                                }
+                                .buttonStyle(PlainButtonStyle())
                             }
                         }
                         .padding(.horizontal, 16)
@@ -71,9 +72,6 @@ struct FieldsListView: View {
             }
             .refreshable {
                 await viewModel.loadFields(using: demeterService)
-            }
-            .sheet(item: $selectedField) { field in
-                FieldDetailView(field: field)
             }
         }
     }
@@ -166,3 +164,4 @@ class FieldsListViewModel {
     FieldsListView()
         .environmentObject(DemeterService.shared)
 }
+

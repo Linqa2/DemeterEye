@@ -10,142 +10,127 @@ import Charts
 
 struct HistoryChartView: View {
     @State private var viewModel: HistoryChartViewModel
-    @Environment(\.dismiss) private var dismiss
     
     init(history: [FieldHistory]) {
         self._viewModel = State(initialValue: HistoryChartViewModel(history: history))
     }
     
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    // Year Selector Tabs
-                    if viewModel.availableYears.count > 1 {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Select Year")
-                                .font(.headline)
-                                .fontWeight(.semibold)
-                                .padding(.horizontal)
-                            
-                            ScrollView(.horizontal, showsIndicators: false) {
-                                HStack(spacing: 12) {
-                                    ForEach(viewModel.availableYears, id: \.self) { year in
-                                        YearTabView(
-                                            year: String(year),
-                                            isSelected: year == viewModel.selectedYear,
-                                            action: { viewModel.selectedYear = year }
-                                        )
-                                    }
-                                }
-                                .padding(.horizontal)
-                            }
-                        }
-                    }
-                    
-                    // Chart Section
-                    VStack(alignment: .leading, spacing: 12) {
-                        HStack {
-                            Text("NDVI Over Time - \(viewModel.selectedYear)")
-                                .font(.headline)
-                                .fontWeight(.semibold)
-                            
-                            Spacer()
-                            
-                            VStack(alignment: .trailing, spacing: 2) {
-                                Text("\(viewModel.chartData.count) points")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                
-                                Text(viewModel.yearSummary.dateRange)
-                                    .font(.caption2)
-                                    .foregroundColor(.secondary)
-                            }
-                        }
-                        .padding(.horizontal)
-                        
-                        ScrollView(.horizontal, showsIndicators: true) {
-                            Chart(viewModel.chartData, id: \.date) { dataPoint in
-                                LineMark(
-                                    x: .value("Date", dataPoint.date),
-                                    y: .value("NDVI", dataPoint.ndvi)
-                                )
-                                .foregroundStyle(Color.demeterGreen)
-                                .lineStyle(StrokeStyle(lineWidth: 2))
-                                
-                                // Only show points if we have reasonable density
-                                if viewModel.shouldShowPoints {
-                                    PointMark(
-                                        x: .value("Date", dataPoint.date),
-                                        y: .value("NDVI", dataPoint.ndvi)
-                                    )
-                                    .foregroundStyle(Color.demeterGreen)
-                                    .symbol(.circle)
-                                    .symbolSize(30)
-                                }
-                            }
-                            .chartYScale(domain: [0, 1]) // NDVI ranges from 0 to 1
-                            .chartXAxis {
-                                AxisMarks(values: .stride(by: viewModel.axisStride)) { value in
-                                    AxisValueLabel {
-                                        if let date = value.as(Date.self) {
-                                            Text(date.formatted(.dateTime.month(.abbreviated).year(.twoDigits)))
-                                        }
-                                    }
-                                    AxisGridLine()
-                                    AxisTick()
-                                }
-                            }
-                            .chartYAxis {
-                                AxisMarks { value in
-                                    AxisValueLabel {
-                                        if let ndviValue = value.as(Double.self) {
-                                            Text("\(ndviValue, specifier: "%.2f")")
-                                        }
-                                    }
-                                    AxisGridLine()
-                                    AxisTick()
-                                }
-                            }
-                            .frame(width: calculateChartWidth(), height: 300)
-                            .padding(.horizontal)
-                        }
-                    }
-                    
-                    // Data Summary
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Data Summary")
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                // Year Selector Tabs
+                if viewModel.availableYears.count > 1 {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Select Year")
                             .font(.headline)
                             .fontWeight(.semibold)
                             .padding(.horizontal)
                         
-                        LazyVStack(spacing: 8) {
-                            ForEach(viewModel.chartData.reversed(), id: \.date) { dataPoint in
-                                DataSummaryRowView(dataPoint: dataPoint)
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 12) {
+                                ForEach(viewModel.availableYears, id: \.self) { year in
+                                    YearTabView(
+                                        year: String(year),
+                                        isSelected: year == viewModel.selectedYear,
+                                        action: { viewModel.selectedYear = year }
+                                    )
+                                }
+                            }
+                            .padding(.horizontal)
+                        }
+                    }
+                }
+                
+                // Chart Section
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        Text("NDVI Over Time - \(viewModel.selectedYear)")
+                            .font(.headline)
+                            .fontWeight(.semibold)
+                        
+                        Spacer()
+                        
+                        VStack(alignment: .trailing, spacing: 2) {
+                            Text("\(viewModel.chartData.count) points")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            
+                            Text(viewModel.yearSummary.dateRange)
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .padding(.horizontal)
+                    
+                    ScrollView(.horizontal, showsIndicators: true) {
+                        Chart(viewModel.chartData, id: \.date) { dataPoint in
+                            LineMark(
+                                x: .value("Date", dataPoint.date),
+                                y: .value("NDVI", dataPoint.ndvi)
+                            )
+                            .foregroundStyle(Color.demeterGreen)
+                            .lineStyle(StrokeStyle(lineWidth: 2))
+                            
+                            // Only show points if we have reasonable density
+                            if viewModel.shouldShowPoints {
+                                PointMark(
+                                    x: .value("Date", dataPoint.date),
+                                    y: .value("NDVI", dataPoint.ndvi)
+                                )
+                                .foregroundStyle(Color.demeterGreen)
+                                .symbol(.circle)
+                                .symbolSize(30)
                             }
                         }
+                        .chartYScale(domain: [0, 1]) // NDVI ranges from 0 to 1
+                        .chartXAxis {
+                            AxisMarks(values: .stride(by: viewModel.axisStride)) { value in
+                                AxisValueLabel {
+                                    if let date = value.as(Date.self) {
+                                        Text(date.formatted(.dateTime.month(.abbreviated).year(.twoDigits)))
+                                    }
+                                }
+                                AxisGridLine()
+                                AxisTick()
+                            }
+                        }
+                        .chartYAxis {
+                            AxisMarks { value in
+                                AxisValueLabel {
+                                    if let ndviValue = value.as(Double.self) {
+                                        Text("\(ndviValue, specifier: "%.2f")")
+                                    }
+                                }
+                                AxisGridLine()
+                                AxisTick()
+                            }
+                        }
+                        .frame(width: calculateChartWidth(), height: 300)
                         .padding(.horizontal)
                     }
+                }
+                
+                // Data Summary
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Data Summary")
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                        .padding(.horizontal)
                     
-                    Spacer(minLength: 20)
-                }
-            }
-            .background(Color.demeterBackground)
-            .navigationTitle("Field History")
-            .navigationBarTitleDisplayMode(.large)
-            .navigationBarBackButtonHidden(true)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: { dismiss() }) {
-                        HStack(spacing: 4) {
-                            Image(systemName: "xmark")
-                            Text("Close")
+                    LazyVStack(spacing: 8) {
+                        ForEach(viewModel.chartData.reversed(), id: \.date) { dataPoint in
+                            DataSummaryRowView(dataPoint: dataPoint)
                         }
-                        .foregroundColor(.demeterGreen)
                     }
+                    .padding(.horizontal)
                 }
+                
+                Spacer(minLength: 20)
             }
         }
+        .background(Color.demeterBackground)
+        .navigationTitle("Field History")
+        .navigationBarTitleDisplayMode(.large)
     }
     
     private func calculateChartWidth() -> CGFloat {
@@ -156,6 +141,22 @@ struct HistoryChartView: View {
 
 struct DataSummaryRowView: View {
     let dataPoint: HistoryDataPoint
+    
+    private var temperatureText: String {
+        if let temp = dataPoint.originalData.temperatureDegC {
+            return String(format: "%.1f°C", temp)
+        } else {
+            return "—"
+        }
+    }
+    
+    private var clarityText: String {
+        if let clarity = dataPoint.originalData.clarityPct {
+            return String(format: "%.0f%% clarity", clarity)
+        } else {
+            return "—"
+        }
+    }
     
     var body: some View {
         HStack {
@@ -172,11 +173,11 @@ struct DataSummaryRowView: View {
             Spacer()
             
             VStack(alignment: .trailing, spacing: 2) {
-                Text("\(dataPoint.originalData.temperatureDegC, specifier: "%.1f")°C")
+                Text(temperatureText)
                     .font(.caption)
                     .foregroundColor(.secondary)
                 
-                Text("\(dataPoint.originalData.clarityPct, specifier: "%.0f")% clarity")
+                Text(clarityText)
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
