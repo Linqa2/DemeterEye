@@ -161,7 +161,7 @@ class DemeterService: ObservableObject {
             }
             
             return try parseJsonToArray(from: data).map { try Field(from: $0) }
-        } catch is DecodingError {
+        } catch let error as DecodingError {
             throw DemeterError.fetchFieldsFailed
         } catch {
             throw DemeterError.networkError

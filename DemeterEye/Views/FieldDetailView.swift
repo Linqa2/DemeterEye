@@ -41,81 +41,13 @@ struct FieldDetailView: View {
                     }
                     .padding(.horizontal, 16)
                     
-                    // Summary Cards
+                    // Field Metadata Card
                     VStack(spacing: 16) {
-                        // Season Start Card
-                        if let current = field.current {
-                            SummaryCardView(
-                                title: "Season Start",
-                                value: viewModel.formatDate(current.sos),
-                                subtitle: viewModel.getSeasonStartComparison(field: field),
-                                icon: "sun.max.fill",
-                                iconColor: .orange
-                            )
-                            
-                            // Peak NDVI Card
-                            SummaryCardView(
-                                title: "Peak NDVI",
-                                value: String(format: "%.2f", current.peakNdvi),
-                                subtitle: viewModel.getPeakNDVIDate(field: field),
-                                icon: "chart.line.uptrend.xyaxis",
-                                iconColor: .demeterGreen
-                            )
-                        } else {
-                            // No current data available cards
-                            SummaryCardView(
-                                title: "Season Start",
-                                value: "No Data",
-                                subtitle: "Current season data not available",
-                                icon: "sun.max.fill",
-                                iconColor: .gray
-                            )
-                            
-                            SummaryCardView(
-                                title: "Peak NDVI",
-                                value: "No Data",
-                                subtitle: "Current season data not available",
-                                icon: "chart.line.uptrend.xyaxis",
-                                iconColor: .gray
-                            )
-                        }
+                        FieldMetadataCardView(field: field)
                         
-                        // Comparison Card
-                        if field.norm != nil && field.current != nil {
-                            SummaryCardView(
-                                title: "vs Long-term Average",
-                                value: viewModel.getComparisonText(field: field),
-                                subtitle: "Based on historical data",
-                                icon: "clock.arrow.circlepath",
-                                iconColor: .blue
-                            )
-                        } else {
-                            SummaryCardView(
-                                title: "vs Long-term Average",
-                                value: "No Data",
-                                subtitle: "Historical data not available",
-                                icon: "clock.arrow.circlepath",
-                                iconColor: .gray
-                            )
-                        }
-                        
-                        // Forecast Card
-                        if let forecast = field.forecast {
-                            SummaryCardView(
-                                title: "Yield Forecast",
-                                value: String(format: "%.1f t/ha", forecast.yieldTph),
-                                subtitle: String(format: "%.0f%% confidence", forecast.confidence * 100),
-                                icon: "target",
-                                iconColor: .purple
-                            )
-                        } else {
-                            SummaryCardView(
-                                title: "Yield Forecast",
-                                value: "No Data",
-                                subtitle: "Forecast not available",
-                                icon: "target",
-                                iconColor: .gray
-                            )
+                        // History Button Card (if history data exists)
+                        if let history = field.history, !history.isEmpty {
+                            HistoryButtonCardView(history: history)
                         }
                     }
                     .padding(.horizontal, 16)
@@ -186,61 +118,146 @@ struct SummaryCardView: View {
     }
 }
 
+struct FieldMetadataCardView: View {
+    let field: Field
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Circle()
+                    .fill(Color.demeterGreen.opacity(0.1))
+                    .frame(width: 50, height: 50)
+                    .overlay(
+                        Image(systemName: "info.circle.fill")
+                            .foregroundColor(.demeterGreen)
+                            .font(.title2)
+                    )
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Field Information")
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.primary)
+                    
+                    Text("Basic field metadata")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                
+                Spacer()
+            }
+            
+            VStack(spacing: 12) {
+                MetadataRowView(label: "Area", value: field.areaText, icon: "ruler")
+                MetadataRowView(label: "Crop", value: field.cropType, icon: "leaf.fill")
+                
+                if let notes = field.meta.notes, !notes.isEmpty {
+                    MetadataRowView(label: "Notes", value: notes, icon: "note.text")
+                }
+                
+                MetadataRowView(label: "Created", value: formatCreatedDate(field.createdAt), icon: "calendar")
+            }
+        }
+        .padding(20)
+        .background(Color.white)
+        .cornerRadius(16)
+        .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+    }
+    
+    private func formatCreatedDate(_ dateString: String) -> String {
+        let formatter = ISO8601DateFormatter()
+        if let date = formatter.date(from: dateString) {
+            let displayFormatter = DateFormatter()
+            displayFormatter.dateStyle = .medium
+            return displayFormatter.string(from: date)
+        }
+        return dateString
+    }
+}
+
+struct MetadataRowView: View {
+    let label: String
+    let value: String
+    let icon: String
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .foregroundColor(.demeterGreen)
+                .font(.subheadline)
+                .frame(width: 16)
+            
+            Text(label)
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+            
+            Spacer()
+            
+            Text(value)
+                .font(.subheadline)
+                .fontWeight(.medium)
+                .foregroundColor(.primary)
+        }
+    }
+}
+
+struct HistoryButtonCardView: View {
+    let history: [FieldHistory]
+    @State private var showingHistoryChart = false
+    
+    var body: some View {
+        Button(action: {
+            showingHistoryChart = true
+        }) {
+            HStack(spacing: 16) {
+                Circle()
+                    .fill(Color.blue.opacity(0.1))
+                    .frame(width: 50, height: 50)
+                    .overlay(
+                        Image(systemName: "chart.xyaxis.line")
+                            .foregroundColor(.blue)
+                            .font(.title2)
+                    )
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Historical Data")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                    
+                    Text("View NDVI Chart")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundColor(.primary)
+                    
+                    Text("\(history.count) data points available")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                
+                Spacer()
+                
+                Image(systemName: "chevron.right")
+                    .foregroundColor(.secondary)
+                    .font(.subheadline)
+            }
+            .padding(20)
+            .background(Color.white)
+            .cornerRadius(16)
+            .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+        }
+        .buttonStyle(PlainButtonStyle())
+        .sheet(isPresented: $showingHistoryChart) {
+            HistoryChartView(history: history)
+        }
+    }
+}
+
+
+
 @Observable
 class FieldDetailViewModel {
-    
-    func formatDate(_ dateString: String) -> String {
-        return dateString.formatAsDisplayDate()
-    }
-    
-    func getSeasonStartComparison(field: Field) -> String {
-        guard let current = field.current else {
-            return "No current data available"
-        }
-        
-        let daysDiff = current.deviation.daysSOS ?? 0
-        
-        if daysDiff > 0 {
-            return "\(daysDiff) days later than normal"
-        } else if daysDiff < 0 {
-            return "\(abs(daysDiff)) days earlier than normal"
-        } else {
-            return "Right on schedule"
-        }
-    }
-    
-    func getPeakNDVIDate(field: Field) -> String {
-        guard let current = field.current else {
-            return "No current data available"
-        }
-        
-        if let peakDate = current.peakDate {
-            return "Peak reached: \(formatDate(peakDate))"
-        } else if let forecast = field.forecast {
-            let forecastDate = formatDate(forecast.ndviPeakAt)
-            return "Expected: \(forecastDate)"
-        } else {
-            return "Peak date not available"
-        }
-    }
-    
-    func getComparisonText(field: Field) -> String {
-        guard let current = field.current,
-              let norm = field.norm else {
-            return "No data available"
-        }
-        
-        let ndviDiff = current.deviation.peakNdvi
-        let percentage = (ndviDiff / norm.peakNdviAvg) * 100
-        
-        if percentage > 5 {
-            return String(format: "+%.0f%% Above Average", percentage)
-        } else if percentage < -5 {
-            return String(format: "%.0f%% Below Average", percentage)
-        } else {
-            return "Within Normal Range"
-        }
-    }
+    // This view model can be simplified or removed entirely
+    // since most functionality is now handled directly in the views
 }
 
 #Preview {
@@ -259,9 +276,15 @@ class FieldDetailViewModel {
             ]
         ])),
         createdAt: "2025-10-01T20:30:00Z",
-        meta: FieldMeta(areaHa: 12.8, notes: "Sample field", crop: "wheat"),
+        meta: FieldMeta(areaHa: 12.8, notes: "Sample field for testing", crop: "wheat"),
         yields: [],
-        history: [],
+        history: [
+            FieldHistory(date: "2025-03-15T00:00:00Z", ndvi: 0.25, cloudCover: 10, collection: "sentinel", temperatureDegC: 8.5, humidityPct: 65, cloudcoverPct: 10, windSpeedMps: 2.3, clarityPct: 90),
+            FieldHistory(date: "2025-04-01T00:00:00Z", ndvi: 0.45, cloudCover: 15, collection: "sentinel", temperatureDegC: 12.8, humidityPct: 58, cloudcoverPct: 15, windSpeedMps: 3.1, clarityPct: 85),
+            FieldHistory(date: "2025-04-15T00:00:00Z", ndvi: 0.62, cloudCover: 5, collection: "sentinel", temperatureDegC: 18.2, humidityPct: 52, cloudcoverPct: 5, windSpeedMps: 1.8, clarityPct: 95),
+            FieldHistory(date: "2025-05-01T00:00:00Z", ndvi: 0.78, cloudCover: 20, collection: "sentinel", temperatureDegC: 22.1, humidityPct: 48, cloudcoverPct: 20, windSpeedMps: 2.7, clarityPct: 80),
+            FieldHistory(date: "2025-05-18T00:00:00Z", ndvi: 0.82, cloudCover: 8, collection: "sentinel", temperatureDegC: 25.3, humidityPct: 45, cloudcoverPct: 8, windSpeedMps: 1.5, clarityPct: 92)
+        ],
         norm: FieldNorm(sosAvgDOY: 85, peakAvgDOY: 138, eosAvgDOY: 233, losAvgDays: 148, peakNdviAvg: 0.75),
         current: CurrentData(sos: "2025-03-27T00:00:00Z", peakDate: "2025-05-18T00:00:00Z", eos: nil, los: nil, peakNdvi: 0.62, deviation: Deviation(daysSOS: 2, daysPeak: 0, daysEOS: nil, daysLOS: nil, peakNdvi: -0.05)),
         forecast: ForecastData(year: 2025, yieldTph: 4.5, ndviPeak: 0.73, ndviPeakAt: "2025-05-22T00:00:00Z", model: "xgb-v1", confidence: 0.72, updatedAt: "2025-10-01T20:31:00Z")

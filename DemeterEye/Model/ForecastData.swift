@@ -9,15 +9,15 @@ import Foundation
 
 struct ForecastData: Codable {
     let year: Int
-    let yieldTph: Double
-    let ndviPeak: Double
-    let ndviPeakAt: String
-    let model: String
-    let confidence: Double
-    let updatedAt: String
+    let yieldTph: Double?
+    let ndviPeak: Double?
+    let ndviPeakAt: String?
+    let model: String?
+    let confidence: Double?
+    let updatedAt: String?
     
     // Parameter-based initializer
-    init(year: Int, yieldTph: Double, ndviPeak: Double, ndviPeakAt: String, model: String, confidence: Double, updatedAt: String) {
+    init(year: Int, yieldTph: Double? = nil, ndviPeak: Double? = nil, ndviPeakAt: String? = nil, model: String? = nil, confidence: Double? = nil, updatedAt: String? = nil) {
         self.year = year
         self.yieldTph = yieldTph
         self.ndviPeak = ndviPeak
@@ -29,24 +29,18 @@ struct ForecastData: Codable {
     
     // Dictionary-based initializer
     init(from dictionary: [String: Any]) throws {
-        guard let year = dictionary["year"] as? Int,
-              let yieldTph = dictionary["yieldTph"] as? Double,
-              let ndviPeak = dictionary["ndviPeak"] as? Double,
-              let ndviPeakAt = dictionary["ndviPeakAt"] as? String,
-              let model = dictionary["model"] as? String,
-              let confidence = dictionary["confidence"] as? Double,
-              let updatedAt = dictionary["updatedAt"] as? String else {
+        guard let year = dictionary["year"] as? Int else {
             throw DecodingError.dataCorrupted(
-                DecodingError.Context(codingPath: [], debugDescription: "Missing required fields in ForecastData dictionary")
+                DecodingError.Context(codingPath: [], debugDescription: "Missing required 'year' field in ForecastData dictionary")
             )
         }
         
         self.year = year
-        self.yieldTph = yieldTph
-        self.ndviPeak = ndviPeak
-        self.ndviPeakAt = ndviPeakAt
-        self.model = model
-        self.confidence = confidence
-        self.updatedAt = updatedAt
+        self.yieldTph = dictionary["yieldTph"] as? Double
+        self.ndviPeak = dictionary["ndviPeak"] as? Double
+        self.ndviPeakAt = dictionary["ndviPeakAt"] as? String
+        self.model = dictionary["model"] as? String
+        self.confidence = dictionary["confidence"] as? Double
+        self.updatedAt = dictionary["updatedAt"] as? String
     }
 }
