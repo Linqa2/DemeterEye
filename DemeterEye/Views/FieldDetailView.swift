@@ -271,32 +271,53 @@ struct ForecastCardView: View {
             
             // Content
             VStack(spacing: 12) {
+                // Year
                 MetadataRowView(label: "Year", value: "\(forecast.year)", icon: "calendar")
                 
+                // Yield section
                 if let yield = forecast.yieldTph {
                     MetadataRowView(label: "Yield", value: String(format: "%.1f t/ha", yield), icon: "scalemass")
                 }
-                                
+                if let yModel = forecast.yieldModel, !yModel.isEmpty {
+                    MetadataRowView(label: "Yield model", value: yModel, icon: "cpu")
+                }
+                if let yConf = forecast.yieldConfidence {
+                    VStack(alignment: .leading, spacing: 8) {
+                        MetadataRowView(label: "Yield confidence", value: String(format: "%.0f%%", max(0, min(1, yConf)) * 100), icon: "checkmark.seal.fill")
+                        ProgressView(value: min(max(yConf, 0), 1))
+                            .tint(.demeterGreen)
+                    }
+                }
+                
+                // NDVI section
+                if let start = forecast.ndviStartAt, let end = forecast.ndviEndAt {
+                    MetadataRowView(label: "Bloom season period", value: "\(formatDate(start)) – \(formatDate(end))", icon: "calendar")
+                } else if let start = forecast.ndviStartAt {
+                    MetadataRowView(label: "Bloom season start", value: formatDate(start), icon: "calendar")
+                } else if let end = forecast.ndviEndAt {
+                    MetadataRowView(label: "Bloom season end", value: formatDate(end), icon: "calendar")
+                }
+                
                 if let peakAt = forecast.ndviPeakAt {
-                    MetadataRowView(label: "Bloom peak date", value: formatDate(peakAt), icon: "calendar.badge.clock")
+                    MetadataRowView(label: "Bloom season peak date", value: formatDate(peakAt), icon: "calendar.badge.clock")
                 }
                 
                 if let peak = forecast.ndviPeak {
                     MetadataRowView(label: "Peak NDVI", value: String(format: "%.2f", peak), icon: "leaf.circle.fill")
                 }
                 
-                if let confidence = forecast.confidence {
+                if let nModel = forecast.ndviModel, !nModel.isEmpty {
+                    MetadataRowView(label: "NDVI model", value: nModel, icon: "cpu")
+                }
+                if let nConf = forecast.ndviConfidence {
                     VStack(alignment: .leading, spacing: 8) {
-                        MetadataRowView(label: "Confidence", value: String(format: "%.0f%%", confidence * 100), icon: "checkmark.seal.fill")
-                        ProgressView(value: min(max(confidence, 0), 1))
+                        MetadataRowView(label: "NDVI confidence", value: String(format: "%.0f%%", max(0, min(1, nConf)) * 100), icon: "checkmark.seal.fill")
+                        ProgressView(value: min(max(nConf, 0), 1))
                             .tint(.demeterGreen)
                     }
                 }
                 
-                if let model = forecast.model, !model.isEmpty {
-                    MetadataRowView(label: "Model", value: model, icon: "cpu")
-                }
-                
+                // Updated timestamp
                 if let updated = forecast.updatedAt {
                     MetadataRowView(label: "Updated", value: formatDate(updated), icon: "clock.arrow.2.circlepath")
                 }
@@ -364,9 +385,8 @@ class FieldDetailViewModel {
             FieldHistory(date: "2025-05-01T00:00:00Z", ndvi: 0.78, cloudCover: 20, collection: "sentinel", temperatureDegC: 22.1, humidityPct: 48, cloudcoverPct: 20, windSpeedMps: 2.7, clarityPct: 80),
             FieldHistory(date: "2025-05-18T00:00:00Z", ndvi: 0.82, cloudCover: 8, collection: "sentinel", temperatureDegC: 25.3, humidityPct: 45, cloudcoverPct: 8, windSpeedMps: 1.5, clarityPct: 92)
         ],
-        forecast: ForecastData(year: 2025, yieldTph: 4.5, ndviPeak: 0.73, ndviPeakAt: "2025-05-22T00:00:00Z", model: "xgb-v1", confidence: 0.72, updatedAt: "2025-10-01T20:31:00Z")
+        forecast: ForecastData(year: 2025, yieldTph: 4.5, ndviPeak: 0.73, ndviPeakAt: "2025-05-22T00:00:00Z", yieldModel: "xgb-v1", yieldConfidence: 0.72, updatedAt: "2025-10-01T20:31:00Z")
     )
     
     FieldDetailView(field: sampleField)
 }
-

@@ -17,6 +17,7 @@ struct FieldHistory: Codable {
     let cloudcoverPct: Double?
     let windSpeedMps: Double?
     let clarityPct: Double?
+    let type: Int?
     
     enum CodingKeys: String, CodingKey {
         case date, ndvi, collection
@@ -26,6 +27,7 @@ struct FieldHistory: Codable {
         case cloudcoverPct = "cloudcover_pct"
         case windSpeedMps = "wind_speed_mps"
         case clarityPct = "clarity_pct"
+        case type
     }
     
     // Parameter-based initializer
@@ -38,7 +40,8 @@ struct FieldHistory: Codable {
         humidityPct: Double? = nil,
         cloudcoverPct: Double? = nil,
         windSpeedMps: Double? = nil,
-        clarityPct: Double? = nil
+        clarityPct: Double? = nil,
+        type: Int? = nil
     ) {
         self.date = date
         self.ndvi = ndvi
@@ -49,6 +52,7 @@ struct FieldHistory: Codable {
         self.cloudcoverPct = cloudcoverPct
         self.windSpeedMps = windSpeedMps
         self.clarityPct = clarityPct
+        self.type = type
     }
     
     // Dictionary-based initializer
@@ -68,5 +72,6 @@ struct FieldHistory: Codable {
         self.cloudcoverPct = dictionary["cloudcover_pct"] as? Double
         self.windSpeedMps = dictionary["wind_speed_mps"] as? Double
         self.clarityPct = dictionary["clarity_pct"] as? Double
+        self.type = dictionary["type"] as? Int
     }
 }

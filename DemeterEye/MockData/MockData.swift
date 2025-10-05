@@ -64,8 +64,8 @@ extension Field {
                 yieldTph: 4.5,
                 ndviPeak: 0.73,
                 ndviPeakAt: "2025-05-22T00:00:00Z",
-                model: "xgb-v1",
-                confidence: 0.72,
+                yieldModel: "xgb-v1",
+                yieldConfidence: 0.72,
                 updatedAt: "2025-10-01T20:31:00Z"
             )
         ),
@@ -124,8 +124,8 @@ extension Field {
                 yieldTph: 9.2,
                 ndviPeak: 0.79,
                 ndviPeakAt: "2025-06-20T00:00:00Z",
-                model: "xgb-v1",
-                confidence: 0.78,
+                yieldModel: "xgb-v1",
+                yieldConfidence: 0.78,
                 updatedAt: "2025-10-01T20:31:00Z"
             )
         ),
@@ -184,11 +184,10 @@ extension Field {
                 yieldTph: 3.6,
                 ndviPeak: 0.76,
                 ndviPeakAt: "2025-07-15T00:00:00Z",
-                model: "xgb-v1",
-                confidence: 0.69,
+                yieldModel: "xgb-v1",
+                yieldConfidence: 0.69,
                 updatedAt: "2025-10-01T20:31:00Z"
             )
         )
     ]
 }
-

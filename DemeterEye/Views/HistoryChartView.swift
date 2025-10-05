@@ -213,13 +213,16 @@ private struct ChartSectionView: View {
                                 
                                 // Compute per-metric domain once
                                 let domain = perMetricDomain(for: metric, points: metricPoints)
+                                let baseColor = color(for: metric)
                                 
                                 Chart(metricPoints) { (point: MultiMetricPoint) in
+                                    let status = (point.original?.type == 1) ? "Forecast" : "Actual"
+                                    
                                     LineMark(
                                         x: .value("Date", point.date),
                                         y: .value("Value", point.value)
                                     )
-                                    .foregroundStyle(color(for: metric))
+                                    .foregroundStyle(by: .value("Status", status))
                                     .lineStyle(StrokeStyle(lineWidth: 2))
                                     
                                     if shouldShowPoints {
@@ -227,11 +230,16 @@ private struct ChartSectionView: View {
                                             x: .value("Date", point.date),
                                             y: .value("Value", point.value)
                                         )
-                                        .foregroundStyle(color(for: metric))
+                                        .foregroundStyle(by: .value("Status", status))
                                         .symbol(.circle)
                                         .symbolSize(30)
                                     }
                                 }
+                                // Map both series ("Actual"/"Forecast") to the same color with different opacity
+                                .chartForegroundStyleScale(
+                                    domain: ["Actual", "Forecast"],
+                                    range: [baseColor, baseColor.opacity(0.35)]
+                                )
                                 .chartYAxisScale(optionalDomain: domain)
                                 .chartXAxis {
                                     AxisMarks(values: .stride(by: axisStride)) { value in
@@ -557,8 +565,8 @@ struct SummaryNavigationCardView: View {
         FieldHistory(date: "2024-04-15T00:00:00.000Z", ndvi: 0.62, cloudCover: 5, collection: "sentinel", temperatureDegC: 18.2, humidityPct: 52, cloudcoverPct: 5, windSpeedMps: 1.8, clarityPct: 95),
         
         // 2025 data
-        FieldHistory(date: "2025-05-01T00:00:00.000Z", ndvi: 0.78, cloudCover: 20, collection: "sentinel", temperatureDegC: 22.1, humidityPct: 48, cloudcoverPct: 20, windSpeedMps: 2.7, clarityPct: 80),
-        FieldHistory(date: "2025-05-18T00:00:00.000Z", ndvi: 0.82, cloudCover: 8, collection: "sentinel", temperatureDegC: 25.3, humidityPct: 45, cloudcoverPct: 8, windSpeedMps: 1.5, clarityPct: 92)
+        FieldHistory(date: "2025-05-01T00:00:00.000Z", ndvi: 0.78, cloudCover: 20, collection: "sentinel", temperatureDegC: 22.1, humidityPct: 48, cloudcoverPct: 20, windSpeedMps: 2.7, clarityPct: 80, type: 1),
+        FieldHistory(date: "2025-05-18T00:00:00.000Z", ndvi: 0.82, cloudCover: 8, collection: "sentinel", temperatureDegC: 25.3, humidityPct: 45, cloudcoverPct: 8, windSpeedMps: 1.5, clarityPct: 92, type: 1)
     ]
     
     HistoryChartView(history: sampleHistory)
