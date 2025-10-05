@@ -44,7 +44,8 @@ struct HistoryChartView: View {
                     yAxisDomain: viewModel.yAxisDomain, // not used in small multiples but kept for compatibility
                     axisStride: viewModel.axisStride,
                     shouldShowPoints: viewModel.shouldShowPoints,
-                    chartWidth: calculateChartWidth()
+                    chartWidth: calculateChartWidth(),
+                    xAxisDomain: viewModel.xAxisDomain
                 )
                 
                 // Data Summary Navigation
@@ -161,6 +162,7 @@ private struct ChartSectionView: View {
     let axisStride: Calendar.Component
     let shouldShowPoints: Bool
     let chartWidth: CGFloat
+    let xAxisDomain: ClosedRange<Date>
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -198,75 +200,85 @@ private struct ChartSectionView: View {
                     VStack(alignment: .leading, spacing: 16) {
                         ForEach(orderedMetrics, id: \.self) { metric in
                             let metricPoints = points.filter { $0.metric == metric }
-                            if !metricPoints.isEmpty || metric.defaultDomain != nil {
-                                // Header per metric
-                                HStack(spacing: 8) {
-                                    Circle()
-                                        .fill(color(for: metric))
-                                        .frame(width: 10, height: 10)
-                                    Text(metric.displayName)
-                                        .font(.subheadline)
-                                        .fontWeight(.semibold)
-                                        .foregroundColor(.primary)
-                                }
-                                .padding(.horizontal)
+                            
+                            // Header per metric
+                            HStack(spacing: 8) {
+                                Circle()
+                                    .fill(color(for: metric))
+                                    .frame(width: 10, height: 10)
+                                Text(metric.displayName)
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.primary)
+                            }
+                            .padding(.horizontal)
+                            
+                            // Compute per-metric domain once
+                            let domain = perMetricDomain(for: metric, points: metricPoints)
+                            let baseColor = color(for: metric)
+                            let hasData = !metricPoints.isEmpty
+                            
+                            Chart(metricPoints) { (point: MultiMetricPoint) in
+                                let status = (point.original?.type == 1) ? "Forecast" : "Actual"
                                 
-                                // Compute per-metric domain once
-                                let domain = perMetricDomain(for: metric, points: metricPoints)
-                                let baseColor = color(for: metric)
+                                LineMark(
+                                    x: .value("Date", point.date),
+                                    y: .value("Value", point.value)
+                                )
+                                .foregroundStyle(by: .value("Status", status))
+                                .lineStyle(StrokeStyle(lineWidth: 2))
                                 
-                                Chart(metricPoints) { (point: MultiMetricPoint) in
-                                    let status = (point.original?.type == 1) ? "Forecast" : "Actual"
-                                    
-                                    LineMark(
+                                if shouldShowPoints {
+                                    PointMark(
                                         x: .value("Date", point.date),
                                         y: .value("Value", point.value)
                                     )
                                     .foregroundStyle(by: .value("Status", status))
-                                    .lineStyle(StrokeStyle(lineWidth: 2))
-                                    
-                                    if shouldShowPoints {
-                                        PointMark(
-                                            x: .value("Date", point.date),
-                                            y: .value("Value", point.value)
-                                        )
-                                        .foregroundStyle(by: .value("Status", status))
-                                        .symbol(.circle)
-                                        .symbolSize(30)
-                                    }
+                                    .symbol(.circle)
+                                    .symbolSize(30)
                                 }
-                                // Map both series ("Actual"/"Forecast") to the same color with different opacity
-                                .chartForegroundStyleScale(
-                                    domain: ["Actual", "Forecast"],
-                                    range: [baseColor, baseColor.opacity(0.35)]
-                                )
-                                .chartYAxisScale(optionalDomain: domain)
-                                .chartXAxis {
-                                    AxisMarks(values: .stride(by: axisStride)) { value in
-                                        AxisValueLabel {
-                                            if let date = value.as(Date.self) {
-                                                Text(date.formatted(.dateTime.month(.abbreviated).year(.twoDigits)))
-                                            }
-                                        }
-                                        AxisGridLine()
-                                        AxisTick()
-                                    }
+                                
+                                // When no data, add invisible marks at domain bounds
+                                // to ensure axes render even with empty datasets.
+                                if !hasData {
+                                    RuleMark(x: .value("Date", xAxisDomain.lowerBound))
+                                        .opacity(0)
+                                    RuleMark(x: .value("Date", xAxisDomain.upperBound))
+                                        .opacity(0)
                                 }
-                                .chartYAxis {
-                                    AxisMarks { value in
-                                        AxisValueLabel {
-                                            if let y = value.as(Double.self) {
-                                                Text(yAxisLabel(for: y, metric: metric, domain: domain))
-                                            }
-                                        }
-                                        AxisGridLine()
-                                        AxisTick()
-                                    }
-                                }
-                                .frame(width: chartWidth, height: 240)
-                                .padding(.horizontal)
-                                .chartLegend(.hidden)
                             }
+                            // Map both series ("Actual"/"Forecast") to the same color with different opacity
+                            .chartForegroundStyleScale(
+                                domain: ["Actual", "Forecast"],
+                                range: [baseColor, baseColor.opacity(0.35)]
+                            )
+                            .chartXAxis {
+                                AxisMarks(values: .stride(by: axisStride)) { value in
+                                    AxisValueLabel {
+                                        if let date = value.as(Date.self) {
+                                            Text(date.formatted(.dateTime.month(.abbreviated).year(.twoDigits)))
+                                        }
+                                    }
+                                    AxisGridLine()
+                                    AxisTick()
+                                }
+                            }
+                            .chartYAxis {
+                                AxisMarks { value in
+                                    AxisValueLabel {
+                                        if let y = value.as(Double.self) {
+                                            Text(yAxisLabel(for: y, metric: metric, domain: domain))
+                                        }
+                                    }
+                                    AxisGridLine()
+                                    AxisTick()
+                                }
+                            }
+                            .chartYAxisScale(optionalDomain: domain)
+                            .chartXScale(domain: xAxisDomain)
+                            .frame(width: chartWidth, height: 240)
+                            .padding(.horizontal)
+                            .chartLegend(.hidden)
                         }
                     }
                 }
@@ -571,3 +583,4 @@ struct SummaryNavigationCardView: View {
     
     HistoryChartView(history: sampleHistory)
 }
+

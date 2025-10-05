@@ -132,6 +132,16 @@ class HistoryChartViewModel {
         return .month
     }
     
+    // Shared X-axis domain for the selected year (full year)
+    var xAxisDomain: ClosedRange<Date> {
+        let cal = Calendar.current
+        // Start of selected year
+        let start = cal.date(from: DateComponents(year: selectedYear, month: 1, day: 1)) ?? Date(timeIntervalSince1970: 0)
+        // End of selected year (23:59:59 on Dec 31)
+        let end = cal.date(from: DateComponents(year: selectedYear, month: 12, day: 31, hour: 23, minute: 59, second: 59)) ?? Date()
+        return start...end
+    }
+    
     // MARK: - Filtering
     
     // Filter data for selected year
