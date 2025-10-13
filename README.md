@@ -18,6 +18,7 @@ This project was developed as part of the **NASA Space Apps Challenge 2025**, an
 It is a proof-of-concept tool designed to make complex NASA Earth observation datasets accessible and useful for smallholder farmers worldwide.
 
 Project page: https://www.spaceappschallenge.org/2025/find-a-team/arcnova/?tab=project
+
 Full project github: https://github.com/rinatmini/DemeterEye/
 
 ---
