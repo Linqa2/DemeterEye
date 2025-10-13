@@ -14,7 +14,10 @@ By combining satellite vegetation indices (NDVI/EVI) with climate data, the app 
 - Integration with satellite and climate data sources  
 
 ## About
-This project was developed as part of the **NASA Space Apps Challenge 2025**.  
+This project was developed as part of the **NASA Space Apps Challenge 2025**, and it won **Best use of data** award at the local Seattle site.
 It is a proof-of-concept tool designed to make complex NASA Earth observation datasets accessible and useful for smallholder farmers worldwide.
+
+Project page: https://www.spaceappschallenge.org/2025/find-a-team/arcnova/?tab=project
+Full project github: https://github.com/rinatmini/DemeterEye/
 
 ---
